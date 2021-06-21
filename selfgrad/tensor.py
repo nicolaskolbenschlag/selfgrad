@@ -1,4 +1,5 @@
 import numpy as np
+import selfgrad
 
 class Tensor:
 
@@ -9,8 +10,8 @@ class Tensor:
 
         self.requires_grad: bool = requires_grad
 
-        self.grad = None
-        self._grad_fn = None
+        self.grad: selfgrad.Tensor = None
+        self._grad_fn: selfgrad.Operation = None
     
     @property
     def shape(self):
@@ -20,12 +21,12 @@ class Tensor:
         return f"Tensor({str(self.data)})"
     
     @property
-    def grad_fn(self):
+    def grad_fn(self) -> selfgrad.Operator:
         if not self.requires_grad:
             raise Exception("This tensor doesn't require grad.")
         return self._grad_fn
     
-    def backward(self, grad = None):
+    def backward(self, grad = None) -> bool:
         if not self.requires_grad:
             raise Exception("This tensor doesn't require grad.")
 
@@ -33,7 +34,7 @@ class Tensor:
             return False
         
         if grad is None and self.grad is None:
-            grad = Tensor(1., requires_grad=False)
+            grad = Tensor(1.)
         
         elif self.grad is not None:
             grad = self.grad
@@ -41,15 +42,20 @@ class Tensor:
         self.grad_fn.backward(grad)
         return True
     
-    def add_grad(self, grad):
+    def add_grad(self, grad: selfgrad.Tensor) -> None:
         if self.grad is None:
             self.grad = grad
         else:
             self.grad += grad
     
-    def __add__(self, o):
-        if self.data is not None:
-            self.data += o.data
-        else:
-            self.data = o.data
-        return self
+    def zero_grad(self) -> None:
+        self.grad = None
+    
+    def __add__(self, o: selfgrad.Tensor) -> selfgrad.Tensor:
+        return selfgrad.add(self, o)
+    
+    def __mul__(self, o: selfgrad.Tensor) -> selfgrad.Tensor:
+        return selfgrad.mul(self, o)
+    
+    def __matmul__(self, o: selfgrad.Tensor) -> selfgrad.Tensor:
+        return selfgrad.matmul(self, o)
