@@ -1,9 +1,10 @@
 import abc
-import selfgrad
+
+from selfgrad.module import Module
 
 class Optimizer(abc.ABC):
 
-    def __init__(self, module: selfgrad.Module) -> None:
+    def __init__(self, module: Module) -> None:
         self.module = module
 
     @abc.abstractmethod
@@ -15,7 +16,7 @@ class Optimizer(abc.ABC):
 
 class SGD(Optimizer):
 
-    def __init__(self, module: selfgrad.Module, lr: float) -> None:
+    def __init__(self, module: Module, lr: float) -> None:
         super().__init__(module)
         self.lr = lr
     

@@ -1,15 +1,17 @@
+import abc
 import typing
 import numpy as np
 import inspect
-import selfgrad
 
-class Parameter(selfgrad.Tensor):
+from selfgrad.tensor import Tensor
+
+class Parameter(Tensor):
     
     def __init__(self, *shape) -> None:
         data = np.random.randn(*shape)
         super().__init__(data, requires_grad=True)
 
-class Module:
+class Module(abc.ABC):
 
     @property
     def parameters(self) -> typing.Iterator[Parameter]:
@@ -22,3 +24,10 @@ class Module:
     def zero_grad(self) -> None:
         for parameter in self.parameters:
             parameter.zero_grad()
+    
+    @abc.abstractmethod
+    def forward(self, x: Tensor) -> Tensor:
+        pass
+
+    def __call__(self, x: Tensor) -> Tensor:
+        return self.forward(x)
