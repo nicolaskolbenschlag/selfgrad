@@ -3,7 +3,7 @@ import sklearn.model_selection
 import sklearn.preprocessing
 import matplotlib.pyplot as plt
 
-from selfgrad import Tensor, Module, Parameter, SGD
+from selfgrad import Tensor, Module, Parameter, SGD, Sigmoid, Tanh
 
 digits = sklearn.datasets.load_digits()
 
@@ -28,21 +28,24 @@ class NeuralNetwork(Module):
     def __init__(self, n_input: int, n_hidden: int, n_out: int) -> None:
         self.fc_1 = Parameter(n_input, n_hidden)
         self.fc_2 = Parameter(n_hidden, n_out)
-        self.b_2 = Parameter(n_out)
+        self.b_2 = Parameter(1, n_out)
+        self.sigmoid = Sigmoid()
+        self.tanh = Tanh()
     
     def forward(self, x: Tensor) -> Tensor:
         x = x @ self.fc_1
         x = x @ self.fc_2 + self.b_2
+        x = self.sigmoid(x)
         return x
 
 model = NeuralNetwork(64, 16, 10)
 
-optim = SGD(model, .01)
+optim = SGD(model, .1)
 batch_size = 32
-epochs = 2
+epochs = 20
 
 def mse(y_true: Tensor, y_pred: Tensor) -> Tensor:
-    return ((y_true - y_pred) ** 2).sum()
+    return ((y_true - y_pred) ** 2).mean()
 
 for epoch in range(1, epochs + 1):
     
@@ -52,13 +55,15 @@ for epoch in range(1, epochs + 1):
         X, y = X_train[i : i + batch_size], y_train[i : i + batch_size]
         X, y = Tensor(X), Tensor(y)
 
-        model.zero_grad()
-        y_pred = model(X)
+        if len(X) != batch_size: continue
 
+        y_pred = model(X)
         batch_loss = mse(y, y_pred)
+
         loss += batch_loss
     
     print(f"Epoch {epoch}: {loss.item}")
 
+    model.zero_grad()
     loss.backward()
-    # optim.step()
+    optim.step()

@@ -70,11 +70,14 @@ class Tensor:
     def __matmul__(self, o: Tensor) -> Tensor:
         return MatMul()(self, o)
     
+    def __len__(self) -> int:
+        return len(self.data)
+    
     def sum(self, axis: int = None) -> Tensor:
         return Sum()(self, axis)
     
     def mean(self, axis: int = None) -> Tensor:
-        raise NotImplementedError
+        return Mean()(self, axis)
     
     @property
     def item(self) -> np.ndarray:
@@ -131,7 +134,19 @@ class Sum(Operator):
 
     def backward(self, grad: Tensor) -> None:
         if self.x.requires_grad:
-            self.x.add_grad(Tensor(grad.data * np.ones_like(self.x)))
+            self.x.add_grad(Tensor(grad.data * np.ones_like(self.x.data)))
+            self.x.backward()
+    
+class Mean(Operator):
+
+    def forward(self, x: Tensor, axis: int = None) -> Tensor:
+        self.x = x
+        self.axis = axis
+        return Tensor(np.mean(x.data, axis=axis), requires_grad=x.requires_grad)
+
+    def backward(self, grad: Tensor) -> None:
+        if self.x.requires_grad:
+            self.x.add_grad(Tensor(grad.data * np.ones_like(self.x.data) * (1 / np.mean(self.x.data, axis=self.axis))))
             self.x.backward()
 
 class Mul(Operator):
@@ -166,14 +181,13 @@ class MatMul(Operator):
         self.x, self.y = x, y
         return Tensor(x.data @ y.data, requires_grad=self.x.requires_grad or self.y.requires_grad)
     
-    # TODO fix gradients
     def backward(self, grad: Tensor) -> None:
         if self.x.requires_grad:
             self.x.add_grad(Tensor(grad.data @ self.y.data.T))
             self.x.backward()
         
         if self.y.requires_grad:
-            self.y.add_grad(Tensor(grad.data @ self.x.data.T))
+            self.y.add_grad(Tensor(self.x.data.T @ grad.data))
             self.y.backward()
 
 class Sigmoid(Operator):
@@ -188,7 +202,7 @@ class Sigmoid(Operator):
             self.x.backward()
     
     @staticmethod
-    def sigmoid(x: np.array) -> np.array:
+    def sigmoid(x: np.ndarray) -> np.ndarray:
         return 1 / (1 + np.exp(-x))
 
 class Tanh(Operator):
