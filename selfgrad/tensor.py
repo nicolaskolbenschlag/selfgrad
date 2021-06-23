@@ -59,13 +59,10 @@ class Tensor:
         return Mul()(self, o)
 
     def __sub__(self, o: Tensor) -> Tensor:
-        return (Tensor(-1.) * self) + o
+        return self + (Tensor(-1.) * o)
     
-    def __pow__(self, e: int) -> Tensor:
-        out = Tensor(1.)
-        for _ in range(e):
-            out *= self
-        return out
+    def __pow__(self, e: float) -> Tensor:
+        return Pow()(self, e)
 
     def __matmul__(self, o: Tensor) -> Tensor:
         return MatMul()(self, o)
@@ -173,6 +170,18 @@ class Exp(Operator):
     def backward(self, grad: Tensor) -> None:
         if self.x.requires_grad:
             self.x.add_grad(Tensor(grad.data * np.exp(self.x.data)))
+            self.x.backward()
+
+class Pow(Operator):
+
+    def forward(self, x: Tensor, e: float) -> Tensor:
+        self.x = x
+        self.e = e
+        return Tensor(x.data ** e, requires_grad=x.requires_grad)
+    
+    def backward(self, grad: Tensor) -> None:
+        if self.x.requires_grad:
+            self.x.add_grad(Tensor(grad.data * self.e * self.x.data))
             self.x.backward()
 
 class MatMul(Operator):
