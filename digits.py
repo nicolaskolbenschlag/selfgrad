@@ -40,8 +40,8 @@ class NeuralNetwork(Module):
 
 model = NeuralNetwork(64, 32, 10)
 
-# optim = SGD(model, .001)
-optim = Adam(model)
+optim = SGD(model, .001)
+
 batch_size = 32
 epochs = 100
 
