@@ -5,7 +5,7 @@ import sklearn.metrics
 import matplotlib.pyplot as plt
 import numpy as np
 
-from selfgrad import Tensor, Module, Parameter, SGD, Sigmoid
+from selfgrad import Tensor, Module, Parameter, SGD, Adam, Sigmoid
 
 digits = sklearn.datasets.load_digits()
 
@@ -40,7 +40,8 @@ class NeuralNetwork(Module):
 
 model = NeuralNetwork(64, 32, 10)
 
-optim = SGD(model, .001)
+# optim = SGD(model, .001)
+optim = Adam(model)
 batch_size = 32
 epochs = 100
 

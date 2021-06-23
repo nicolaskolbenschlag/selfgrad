@@ -21,6 +21,9 @@ class Module(abc.ABC):
             elif isinstance(value, Module):
                 yield from value.parameters()
     
+    def count_parameters(self) -> int:
+        return len([p for p in self.parameters])
+    
     def zero_grad(self) -> None:
         for parameter in self.parameters:
             parameter.zero_grad()
