@@ -87,7 +87,7 @@ plt.show()
 _, axes = plt.subplots(1, 4, figsize=(10, 3))
 for ax in axes:
     idx = np.random.randint(0, len(X_test))
-    image, label = X_test[idx].reshape((8, 8)), y_test[idx]
+    image, label = X_test[idx].reshape((8, 8)), y_test_pred[idx]
     ax.set_axis_off()
     ax.imshow(image, cmap=plt.cm.gray_r, interpolation="nearest")
     ax.set_title("Predicted: %i" % label)
