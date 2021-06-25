@@ -70,6 +70,9 @@ class Tensor:
     def __len__(self) -> int:
         return len(self.data)
     
+    def __getitem__(self, idxs: slice) -> Tensor:
+        return Slice()(self, idxs)
+    
     def sum(self, axis: int = None) -> Tensor:
         return Sum()(self, axis)
     
@@ -175,8 +178,7 @@ class Exp(Operator):
 class Pow(Operator):
 
     def forward(self, x: Tensor, e: float) -> Tensor:
-        self.x = x
-        self.e = e
+        self.x, self.e = x, e
         return Tensor(x.data ** e, requires_grad=x.requires_grad)
     
     def backward(self, grad: Tensor) -> None:
@@ -223,4 +225,17 @@ class Tanh(Operator):
     def backward(self, grad: Tensor) -> None:
         if self.x.requires_grad:
             self.x.add_grad(Tensor(grad.data * (1 - np.tanh(self.x.data) ** 2)))
+            self.x.backward()
+
+class Slice(Operator):
+
+    def forward(self, x: Tensor, idxs: slice) -> Tensor:
+        self.x, self.idxs = x, idxs
+        return Tensor(x.data[idxs], requires_grad=x.requires_grad)
+    
+    def backward(self, grad: Tensor) -> None:
+        if self.x.requires_grad:
+            all_grad = np.zeros_like(self.x.data)
+            all_grad[self.idxs] = grad
+            self.x.add_grad(Tensor(all_grad))
             self.x.backward()
