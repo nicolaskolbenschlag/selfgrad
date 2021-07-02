@@ -1,7 +1,11 @@
-# Self-Grad
+# Selfgrad
 
-Library build for learning and understanding automatic differentiation by doing.
+This is (PyTorch-like) library, build for learning and understanding automatic differentiation by implementing it from scratch.
 
-[Post-from-learnml.today](https://learnml.today/making-backpropagation-autograd-mnist-classifier-from-scratch-in-Python-5)
+## Credits
 
-[Repository-from-joelgrus](https://github.com/joelgrus/autograd)
+I followed these great sources to build this.
+
+* [Post](https://learnml.today/making-backpropagation-autograd-mnist-classifier-from-scratch-in-Python-5) from learnml.today
+
+* [Repository](https://github.com/joelgrus/autograd) from joelgrus
